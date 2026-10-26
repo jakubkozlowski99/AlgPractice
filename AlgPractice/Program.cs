@@ -1,10 +1,27 @@
-﻿using System;
+﻿using AlgPractice;
+using System;
+using System.ComponentModel.Design;
+
+
+var logs = new List<LogEntry>
+            {
+                new(new DateTime(2026, 10, 26, 10, 00, 00), "user1", "LOGIN"),
+                new(new DateTime(2026, 10, 26, 10, 01, 00), "user2", "LOGIN"),
+                new(new DateTime(2026, 10, 26, 10, 02, 00), "user1", "LOGOUT"),
+                new(new DateTime(2026, 10, 26, 10, 03, 00), "user1", "LOGIN"),
+                new(new DateTime(2026, 10, 26, 10, 04, 00), "user3", "LOGIN"),
+                new(new DateTime(2026, 10, 26, 10, 05, 00), "user2", "LOGOUT"),
+                new(new DateTime(2026, 10, 26, 10, 06, 00), "user1", "LOGOUT"),
+            };
 
 while (true)
 {
     Console.Clear();
     Console.WriteLine("Choose an option:");
     Console.WriteLine("1) Is anagram?");
+    Console.WriteLine("2) Find first unique character");
+    Console.WriteLine("3) Count logins");
+    Console.WriteLine("4) Find suspicious user");
     Console.WriteLine("0) Exit");
     Console.Write("Select option (0-3): ");
 
@@ -36,6 +53,47 @@ while (true)
                     break;
                 }
             }
+            break;
+
+        case "2":
+            Console.Write("Enter a string to find the first unique character: ");
+            var inputString = Console.ReadLine() ?? string.Empty;
+            FindFirstUniqueCharacter(inputString);
+            break;
+
+        case "3":
+
+            var loginCounts = GetLoginCount(logs);
+
+            if(loginCounts.Count == 0)
+            {
+                Console.WriteLine("No login entries found.");
+                break;
+            }
+
+            Console.WriteLine("Login counts:");
+            foreach (var kvp in loginCounts)
+            {
+                Console.WriteLine($"User: {kvp.Key}, Logins: {kvp.Value}");
+            }
+            break;
+        
+        case "4":
+            var suspiciousUsers = GetSuspiciousUser(logs);
+
+            if (suspiciousUsers.Count == 0)
+            {
+                Console.WriteLine("No suspicious users found.");
+            }
+            else
+            {
+                Console.WriteLine("Suspicious users (more than 2 logins within 5 minutes):");
+                foreach (var user in suspiciousUsers)
+                {
+                    Console.WriteLine($"User: {user}");
+                }
+            }
+
             break;
 
         case "0":
@@ -77,4 +135,95 @@ static bool IsAnagram(string s1, string s2)
     }
 
     return true;
+}
+
+static bool FindFirstUniqueCharacter(string s)
+{
+    var charCount = new Dictionary<char, int>();
+
+    foreach (var c in s)
+    {
+        if (charCount.ContainsKey(c))
+        {
+            charCount[c]++;
+        }
+        else
+        {
+            charCount[c] = 1;
+        }
+    }
+
+    foreach (var c in s)
+    {
+        if (charCount[c] == 1)
+        {
+            Console.WriteLine($"The first unique character is: '{c}'");
+            return true;
+        }
+    }
+    
+    Console.WriteLine("No unique character found.");
+    return false;
+}
+
+Dictionary<string, int> GetLoginCount(List<LogEntry> logs)
+{
+    if (logs == null || logs.Count == 0)
+    {
+        return new Dictionary<string, int>();
+    }
+
+    var loginCounts = new Dictionary<string, int>();
+
+    foreach (var log in logs)
+    {
+        if (log.Action == "LOGIN")
+        {
+            if (loginCounts.ContainsKey(log.UserId))
+            {
+                loginCounts[log.UserId]++;
+            }
+            else
+            {
+                loginCounts[log.UserId] = 1;
+            }
+        }
+    }
+
+    return loginCounts;
+}
+
+List<string> GetSuspiciousUser(List<LogEntry> logs)
+{
+    var loginTimestamps = new Dictionary<string, List<DateTime>>();
+
+    foreach (var log in logs)
+    {
+        if (log.Action == "LOGIN")
+        {
+            if (!loginTimestamps.ContainsKey(log.UserId))
+            {
+                loginTimestamps[log.UserId] = new List<DateTime>();
+            }
+            loginTimestamps[log.UserId].Add(log.Timestamp);
+        }
+    }
+
+    var results = new List<string>();
+
+    foreach (var kvp in loginTimestamps)
+    {
+        var timestamps = kvp.Value;
+        timestamps.Sort();
+        for (int i = 2; i < timestamps.Count; i++)
+        {
+            if ((timestamps[i] - timestamps[i - 2]).TotalMinutes <= 5)
+            {
+                results.Add(kvp.Key);
+                break;
+            }
+        }
+    }
+
+    return results;
 }
