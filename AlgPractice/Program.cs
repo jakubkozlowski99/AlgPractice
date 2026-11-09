@@ -1,5 +1,6 @@
 ﻿using AlgPractice;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design;
 
 
@@ -22,8 +23,9 @@ while (true)
     Console.WriteLine("2) Find first unique character");
     Console.WriteLine("3) Count logins");
     Console.WriteLine("4) Find suspicious user");
+    Console.WriteLine("5) Two Sum");
     Console.WriteLine("0) Exit");
-    Console.Write("Select option (0-3): ");
+    Console.Write("Select option (0-5): ");
 
     var choice = Console.ReadLine()?.Trim();
 
@@ -93,6 +95,68 @@ while (true)
                     Console.WriteLine($"User: {user}");
                 }
             }
+            break;
+
+        case "5":
+
+            Console.Write("Enter amount of numbers you want to enter:");
+            var inputAmount = Console.ReadLine() ?? string.Empty;
+
+            int convertedAmount;
+
+            if (Int32.TryParse(inputAmount, out var amount))
+            {
+                convertedAmount = amount;
+            }
+            else
+            {
+                Console.WriteLine("Wrong input, you have to enter a number.");
+                break;
+            }
+
+            var numbers = new int[convertedAmount]; 
+
+            for (int j = 0; j < convertedAmount; j++)
+            {
+                var input = Console.ReadLine();
+
+                if (Int32.TryParse(input, out var number))
+                {
+                    numbers[j] = number;
+                }
+                else
+                {
+                    Console.WriteLine("Wrong input, you have to enter a number.");
+                    break;
+                }
+            }
+            Console.WriteLine("Your numbers:");
+            for (int j = 0; j < numbers.Length; j++)
+            {
+                if (j == 0) Console.Write("[");
+                Console.Write(numbers[j]);
+                if (j == numbers.Length - 1) Console.Write("]");
+                else Console.Write(", ");
+            }
+            Console.WriteLine("\nEnter a target sum:");
+
+            var targetInput = Console.ReadLine() ?? string.Empty;
+
+            int target;
+
+            if (Int32.TryParse(targetInput, out var targetConverted))
+            {
+                target = targetConverted;
+            }
+            else
+            {
+                Console.WriteLine("Wrong target input, you have to enter a number.");
+                break;
+            }
+
+            var result = TwoSum(numbers, target);
+
+            Console.WriteLine($"Indexes giving that target: {result!.Item1}, {result.Item2}");
 
             break;
 
@@ -103,7 +167,7 @@ while (true)
             return;
 
         default:
-            Console.WriteLine("Unknown option. Please choose 0-3.");
+            Console.WriteLine("Unknown option. Please choose 0-5.");
             break;
     }
 
@@ -166,7 +230,7 @@ static bool FindFirstUniqueCharacter(string s)
     return false;
 }
 
-Dictionary<string, int> GetLoginCount(List<LogEntry> logs)
+static Dictionary<string, int> GetLoginCount(List<LogEntry> logs)
 {
     if (logs == null || logs.Count == 0)
     {
@@ -193,7 +257,7 @@ Dictionary<string, int> GetLoginCount(List<LogEntry> logs)
     return loginCounts;
 }
 
-List<string> GetSuspiciousUser(List<LogEntry> logs)
+static List<string> GetSuspiciousUser(List<LogEntry> logs)
 {
     var loginTimestamps = new Dictionary<string, List<DateTime>>();
 
@@ -226,4 +290,24 @@ List<string> GetSuspiciousUser(List<LogEntry> logs)
     }
 
     return results;
+}
+
+static Tuple<int, int>? TwoSum(int[] numbers, int target)
+{
+    var numToIndex = new Dictionary<int, int>();
+
+    for (int i = 0; i < numbers.Length; i++)
+    {
+        int missing = target - numbers[i];
+
+        if (numToIndex.ContainsKey(missing))
+        {
+            var result = new Tuple<int, int>(numToIndex[missing], i);
+
+            return result;
+
+        }
+        else numToIndex.Add(numbers[i], i);
+    }
+    return null; // Return null if no solution is found
 }
