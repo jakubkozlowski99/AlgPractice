@@ -25,8 +25,9 @@ while (true)
     Console.WriteLine("4) Find suspicious user");
     Console.WriteLine("5) Two Sum");
     Console.WriteLine("6) Valid Parentheses");
+    Console.WriteLine("7) Move Zeroes");
     Console.WriteLine("0) Exit");
-    Console.Write("Select option (0-6): ");
+    Console.Write("Select option (0-7): ");
 
     var choice = Console.ReadLine()?.Trim();
 
@@ -115,22 +116,24 @@ while (true)
                 break;
             }
 
-            var numbers = new int[convertedAmount]; 
+            var numbers = new int[convertedAmount];
 
-            for (int j = 0; j < convertedAmount; j++)
+            Console.Write("Enter the numbers separated by spaces: ");
+            var numInput = Console.ReadLine() ?? string.Empty;
+            var numStrings = numInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            for (int j = 0; j < numStrings.Length; j++)
             {
-                var input = Console.ReadLine();
-
-                if (Int32.TryParse(input, out var number))
+                if (Int32.TryParse(numStrings[j], out var number))
                 {
                     numbers[j] = number;
                 }
                 else
                 {
-                    Console.WriteLine("Wrong input, you have to enter a number.");
+                    Console.WriteLine($"Invalid input '{numStrings[j]}'. Please enter only integers.");
                     break;
                 }
             }
+
             Console.WriteLine("Your numbers:");
             for (int j = 0; j < numbers.Length; j++)
             {
@@ -178,6 +181,28 @@ while (true)
             Console.WriteLine(isValid);
             break;
 
+        case "7":
+            Console.Write("Enter the numbers separated by spaces: ");
+            var numbersInput = Console.ReadLine() ?? string.Empty;
+            var numberStrings = numbersInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var numberArray = new int[numberStrings.Length];
+            for (int j = 0; j < numberStrings.Length; j++)
+            {
+                if (Int32.TryParse(numberStrings[j], out var number))
+                {
+                    numberArray[j] = number;
+                }
+                else
+                {
+                    Console.WriteLine($"Invalid input '{numberStrings[j]}'. Please enter only integers.");
+                    break;
+                }
+            }
+            var resultArray = MoveZeroes(numberArray);
+            Console.WriteLine("Result after moving zeroes:");
+            Console.WriteLine(string.Join(", ", resultArray));
+            break;
+
         case "0":
         case "q":
         case "exit":
@@ -185,7 +210,7 @@ while (true)
             return;
 
         default:
-            Console.WriteLine("Unknown option. Please choose 0-5.");
+            Console.WriteLine("Unknown option. Please choose 0-7.");
             break;
     }
 
@@ -354,5 +379,28 @@ static bool isValidParentheses(string s)
     if (stack.Count == 0) return true;
 
     return false;
+}
+
+static int[] MoveZeroes(int[] numbers)
+{
+    int insertIndex = 0;
+    int zeroCount = 0;
+
+    for (int i = 0; i < numbers.Length; i++)
+    {
+        if (numbers[i] != 0)
+        {
+            numbers[insertIndex] = numbers[i];
+            insertIndex++;
+        }
+        else zeroCount++;
+    }
+
+    for (int i = 0; i < zeroCount; i++)
+    {
+        numbers[insertIndex + i] = 0;
+    }
+
+    return numbers;
 }
 
