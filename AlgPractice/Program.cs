@@ -24,8 +24,9 @@ while (true)
     Console.WriteLine("3) Count logins");
     Console.WriteLine("4) Find suspicious user");
     Console.WriteLine("5) Two Sum");
+    Console.WriteLine("6) Valid Parentheses");
     Console.WriteLine("0) Exit");
-    Console.Write("Select option (0-5): ");
+    Console.Write("Select option (0-6): ");
 
     var choice = Console.ReadLine()?.Trim();
 
@@ -158,6 +159,23 @@ while (true)
 
             Console.WriteLine($"Indexes giving that target: {result!.Item1}, {result.Item2}");
 
+            break;
+
+        case "6":
+            Console.Write("Enter a string to check for valid parentheses: ");
+            var parenthesesInput = Console.ReadLine() ?? string.Empty;
+
+            foreach (var c in parenthesesInput)
+            {
+                if (!"(){}[]".Contains(c))
+                {
+                    Console.WriteLine("Invalid input. Please enter a string containing only parentheses: (), {}, []");
+                    break;
+                }
+            }
+
+            bool isValid = isValidParentheses(parenthesesInput);
+            Console.WriteLine(isValid);
             break;
 
         case "0":
@@ -311,3 +329,30 @@ static Tuple<int, int>? TwoSum(int[] numbers, int target)
     }
     return null; // Return null if no solution is found
 }
+
+static bool isValidParentheses(string s)
+{
+    var stack = new Stack<char>();
+
+    foreach (var c in s)
+    {
+        if (c == '}' || c == ']' || c == ')')
+        {
+            if (stack.Count == 0) return false;
+
+            var top = stack.Pop();
+
+            if ((c == '}' && top != '{') ||
+                (c == ']' && top != '[') ||
+                (c == ')' && top != '('))
+            {
+                return false;
+            }
+        }
+        else stack.Push(c);
+    }
+    if (stack.Count == 0) return true;
+
+    return false;
+}
+
