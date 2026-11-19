@@ -26,8 +26,9 @@ while (true)
     Console.WriteLine("5) Two Sum");
     Console.WriteLine("6) Valid Parentheses");
     Console.WriteLine("7) Move Zeroes");
+    Console.WriteLine("8) Group Anagrams");
     Console.WriteLine("0) Exit");
-    Console.Write("Select option (0-7): ");
+    Console.Write("Select option (0-8): ");
 
     var choice = Console.ReadLine()?.Trim();
 
@@ -201,6 +202,18 @@ while (true)
             var resultArray = MoveZeroes(numberArray);
             Console.WriteLine("Result after moving zeroes:");
             Console.WriteLine(string.Join(", ", resultArray));
+            break;
+
+        case "8":
+            Console.Write("Enter the words separated by spaces: ");
+            var wordsInput = Console.ReadLine() ?? string.Empty;
+            var words = wordsInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var groupedAnagrams = GroupAnagrams(words);
+            Console.WriteLine("Grouped anagrams:");
+            foreach (var group in groupedAnagrams)
+            {
+                Console.WriteLine($"[{string.Join(", ", group)}]");
+            }
             break;
 
         case "0":
@@ -404,3 +417,19 @@ static int[] MoveZeroes(int[] numbers)
     return numbers;
 }
 
+static List<List<string>> GroupAnagrams(string[] words)
+{
+    var anagramGroups = new Dictionary<string, List<string>>();
+
+    foreach (var word in words)
+    {
+        var sortedWord = String.Concat(word.OrderBy(c => c));
+        if (!anagramGroups.ContainsKey(sortedWord))
+        {
+            anagramGroups[sortedWord] = new List<string>();
+        }
+        anagramGroups[sortedWord].Add(word);
+    }
+
+    return anagramGroups.Values.ToList();
+}
