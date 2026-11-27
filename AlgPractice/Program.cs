@@ -3,6 +3,36 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design;
 
+static T[] ReadInput<T>(TryParseDelegate<T> tryParse, string inputTypePrompt)
+{
+    Console.Write("Enter the " + inputTypePrompt + " separated by spaces: ");
+
+    var input = Console.ReadLine() ?? string.Empty;
+    var values = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+    var result = new T[values.Length];
+
+    for (int i = 0; i < values.Length; i++)
+    {
+        if (tryParse(values[i], out var value))
+        {
+            result[i] = value;
+        }
+        else
+        {
+            Console.WriteLine($"Invalid input: {values[i]}");
+            return Array.Empty<T>();
+        }
+    }
+
+    return result;
+}
+
+static bool ParseString(string input, out string result)
+{
+    result = input;
+    return true;
+}
 
 var logs = new List<LogEntry>
             {
@@ -27,8 +57,10 @@ while (true)
     Console.WriteLine("6) Valid Parentheses");
     Console.WriteLine("7) Move Zeroes");
     Console.WriteLine("8) Group Anagrams");
+    Console.WriteLine("9) Remove Duplicates");
+    Console.WriteLine("10) Longest Consecutive Sequence");
     Console.WriteLine("0) Exit");
-    Console.Write("Select option (0-8): ");
+    Console.Write("Select option (0-10): ");
 
     var choice = Console.ReadLine()?.Trim();
 
@@ -183,37 +215,29 @@ while (true)
             break;
 
         case "7":
-            Console.Write("Enter the numbers separated by spaces: ");
-            var numbersInput = Console.ReadLine() ?? string.Empty;
-            var numberStrings = numbersInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var numberArray = new int[numberStrings.Length];
-            for (int j = 0; j < numberStrings.Length; j++)
-            {
-                if (Int32.TryParse(numberStrings[j], out var number))
-                {
-                    numberArray[j] = number;
-                }
-                else
-                {
-                    Console.WriteLine($"Invalid input '{numberStrings[j]}'. Please enter only integers.");
-                    break;
-                }
-            }
-            var resultArray = MoveZeroes(numberArray);
+            var resultArray = MoveZeroes(ReadInput<int>(int.TryParse, "numbers"));
             Console.WriteLine("Result after moving zeroes:");
             Console.WriteLine(string.Join(", ", resultArray));
             break;
 
         case "8":
-            Console.Write("Enter the words separated by spaces: ");
-            var wordsInput = Console.ReadLine() ?? string.Empty;
-            var words = wordsInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var groupedAnagrams = GroupAnagrams(words);
+            var groupedAnagrams = GroupAnagrams(ReadInput<string>(ParseString, "words"));
             Console.WriteLine("Grouped anagrams:");
             foreach (var group in groupedAnagrams)
             {
                 Console.WriteLine($"[{string.Join(", ", group)}]");
             }
+            break;
+
+        case "9":
+            var uniqueNumbers = RemoveDuplicates(ReadInput<int>(int.TryParse, "numbers"));
+            Console.WriteLine("Result after removing duplicates:");
+            Console.WriteLine(string.Join(", ", uniqueNumbers));
+            break;
+
+        case "10":
+            var longestSequenceLength = LongestConsecutive(ReadInput<int>(int.TryParse, "numbers"));
+            Console.WriteLine($"Length of the longest consecutive sequence: {longestSequenceLength}");
             break;
 
         case "0":
@@ -223,7 +247,7 @@ while (true)
             return;
 
         default:
-            Console.WriteLine("Unknown option. Please choose 0-7.");
+            Console.WriteLine("Unknown option. Please choose 0-10.");
             break;
     }
 
@@ -433,3 +457,51 @@ static List<List<string>> GroupAnagrams(string[] words)
 
     return anagramGroups.Values.ToList();
 }
+
+static int[] RemoveDuplicates(int[] numbers)
+{
+    var seen = new HashSet<int>();
+    var result = new List<int>();
+
+    foreach (var number in numbers)
+    {
+        if (seen.Add(number))
+        {
+            result.Add(number);
+        }
+    }
+
+    return result.ToArray();
+}
+
+static int LongestConsecutive(int[] numbers)
+{
+    var seen = new HashSet<int>();
+
+    int longestStreak = 0;
+
+    foreach (var number in numbers)
+    {
+        seen.Add(number);
+    }
+
+    foreach (var number in seen)
+    {
+        if (!seen.Contains(number - 1))
+        {
+            int currentNum = number;
+            int currentStreak = 1;
+            while (seen.Contains(currentNum + 1))
+            {
+                currentNum++;
+                currentStreak++;
+            }
+            longestStreak = Math.Max(longestStreak, currentStreak);
+        }
+    }
+
+    return longestStreak;
+}
+
+
+delegate bool TryParseDelegate<T>(string input, out T result);
